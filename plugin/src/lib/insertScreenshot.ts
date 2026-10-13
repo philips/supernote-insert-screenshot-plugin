@@ -62,6 +62,12 @@ export async function insertImageAtPath(path: string): Promise<InsertResult> {
   }
 
   try {
+    await PluginNoteAPI.saveCurrentNote();
+  } catch (e) {
+    console.error('[insert-screenshot] saveCurrentNote after insert failed', e);
+  }
+
+  try {
     await PluginCommAPI.reloadFile();
   } catch (e) {
     console.error('[insert-screenshot] reloadFile failed', e);
