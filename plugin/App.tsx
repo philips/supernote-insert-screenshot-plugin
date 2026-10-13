@@ -89,9 +89,14 @@ export default function App(): React.JSX.Element {
     await loadImage(recent);
   };
 
+  const startRef = useRef(start);
+  startRef.current = start;
+
   useEffect(() => {
-    start();
-    const sub = DeviceEventEmitter.addListener('insertScreenshotButton', start);
+    startRef.current();
+    const sub = DeviceEventEmitter.addListener('insertScreenshotButton', () => {
+      startRef.current();
+    });
     return () => sub.remove();
   }, []);
 

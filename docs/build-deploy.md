@@ -67,3 +67,21 @@ count so a fresh build always upgrades the previous one.
 - `scripts/snplg-deploy.sh <dir>` — use a different plugin directory (default
   `plugin`).
 - `SNPLG_DEVICE` — required; adb serial or `host:port`.
+
+## CI (GitHub Actions)
+
+`.github/workflows/release.yml` runs on every push to `main`, every pull
+request, and manually. It reproduces the local build: `tsc`, `eslint`, `jest`,
+gradle `:app:testDebugUnitTest` (compiles the native module), then
+`buildPlugin.sh` stamped with the CI version and `verifySnplg.sh` on the
+result. The `.snplg` is uploaded as a workflow artifact (14-day retention).
+
+Version stamping: `versionCode` is the git commit count, so each newer commit
+produces a higher code that upgrades in place; branch builds get
+`versionName` `dev-<short sha>`.
+
+Pushing a tag like `v0.1.0` (only from `main`, only newer than any existing
+tag) additionally publishes the exact verified archive as a GitHub release
+with a `.sha256` checksum; `-suffix` tags (e.g. `v0.1.0-rc.1`) are published
+as pre-releases. Publishing runs in the `release` environment, so required
+reviewers can be added there in the repo settings to gate releases.
