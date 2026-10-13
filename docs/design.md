@@ -68,10 +68,16 @@ Supernote Settings plugin manager. Relevant APIs:
   mtime field, so "most recent" is determined by the Supernote screenshot naming
   convention `YYYYMMDD_HHMMSS.png` (lexical sort, newest first).
 - `PluginCommAPI.getCurrentFilePath()` — verify a `.note` file is open.
-- `PluginNoteAPI.saveCurrentNote()` — flush pending edits before writing.
+- `PluginNoteAPI.saveCurrentNote()` — flush pending edits to disk. Called
+  once before `insertImage` (flush user edits) and once after it (flush the
+  new element — required for the reload below to pick it up).
 - `PluginCommAPI.insertImage(pngPath)` — insert a PNG onto the current
   page/layer. Input must be PNG; screenshots already are.
 - `PluginCommAPI.reloadFile()` — refresh the view after insertion.
+  With the lasso tool selected the note app performs a full single-page
+  reload from disk on this call; without the post-insert save, the inserted
+  element is still only in memory and the reload renders the page without
+  it (the image is persisted later by autosave and appears on reopen).
 
 ## Permissions
 
