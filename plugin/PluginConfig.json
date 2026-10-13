@@ -1,0 +1,14 @@
+{
+  "name": "insert-screenshot",
+  "desc": "Insert the most recent screenshot into the current Supernote note.",
+  "author": "",
+  "iconPath": "assets/icon.png",
+  "versionName": "0.0.1",
+  "versionCode": "1",
+  "pluginID": "0sndxkrq54kv1uk7",
+  "pluginKey": "insert-screenshot",
+  "jsMainPath": "index",
+  "uses-permissions": ["plugin.permission.FILE:READ", "plugin.permission.FILE:WRITE"],
+  "reactPackages": ["com.insertscreenshot.ImageCropPackage"],
+  "nativeCodePackage": "/app.npk"
+}

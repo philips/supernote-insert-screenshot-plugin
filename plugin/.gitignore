@@ -1,0 +1,8 @@
+node_modules/
+build/
+*.snplg
+.DS_Store
+android/.gradle/
+android/build/
+android/app/build/
+.gradle/
