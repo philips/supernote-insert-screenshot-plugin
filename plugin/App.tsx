@@ -4,15 +4,13 @@ import {
   Text,
   Image,
   Pressable,
-  ScrollView,
   StyleSheet,
   LayoutChangeEvent,
   GestureResponderEvent,
-  useWindowDimensions,
   DeviceEventEmitter,
 } from 'react-native';
-import {PluginManager} from 'sn-plugin-lib';
-import {mostRecentScreenshot, listScreenshots} from './src/lib/screenshots';
+import {PluginManager, RattaFileSelector} from 'sn-plugin-lib';
+import {mostRecentScreenshot, SCREENSHOT_DIR} from './src/lib/screenshots';
 import {insertImageAtPath, ensurePermissions} from './src/lib/insertScreenshot';
 import {imageSize, cropImage} from './src/lib/imageCrop';
 
@@ -28,15 +26,7 @@ function clamp(value: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, value));
 }
 
-function basename(p: string): string {
-  const i = p.lastIndexOf('/');
-  return i >= 0 ? p.slice(i + 1) : p;
-}
-
 export default function App(): React.JSX.Element {
-  const {width: windowWidth} = useWindowDimensions();
-  const [screen, setScreen] = useState<'crop' | 'pick'>('crop');
-  const [list, setList] = useState<string[]>([]);
   const [path, setPath] = useState<string | null>(null);
   const [src, setSrc] = useState<{width: number; height: number} | null>(null);
   const [container, setContainer] = useState<{w: number; h: number} | null>(null);
@@ -70,7 +60,6 @@ export default function App(): React.JSX.Element {
   };
 
   const start = async () => {
-    setScreen('crop');
     setPoints([]);
     setBusyFlag(true);
     setStatus('Loading screenshot...');
@@ -175,17 +164,22 @@ export default function App(): React.JSX.Element {
   };
 
   const openPicker = async () => {
-    setBusyFlag(true);
-    setStatus('');
-    const files = await listScreenshots();
-    setList(files);
-    setScreen('pick');
-    setBusyFlag(false);
-  };
-
-  const pickItem = async (p: string) => {
-    setScreen('crop');
-    await loadImage(p);
+    try {
+      const selected = await RattaFileSelector.selectFile({
+        selectType: 1,
+        suffixList: ['png'],
+        maxNum: 1,
+        title: 'Files',
+        needSelectFolder: SCREENSHOT_DIR,
+      });
+      console.log('[insert-screenshot] selectFile result', JSON.stringify(selected));
+      if (selected && selected.length > 0 && selected[0]) {
+        await loadImage(selected[0]);
+      }
+    } catch (e: any) {
+      console.error('[insert-screenshot] selectFile failed', e);
+      setStatus('Error: ' + (e?.message ?? String(e)));
+    }
   };
 
   const hint =
@@ -205,43 +199,13 @@ export default function App(): React.JSX.Element {
     </View>
   );
 
-  if (screen === 'pick') {
-    const cols = 3;
-    const gap = 12;
-    const tileW = Math.floor((windowWidth - 32 - gap * (cols - 1)) / cols);
-    const thumbH = Math.round((tileW * 4) / 3);
-    return (
-      <View style={styles.root}>
-        <Header title="Choose screenshot" />
-        <ScrollView contentContainerStyle={styles.pickGrid}>
-          {list.length === 0 ? (
-            <Text style={styles.emptyText}>No screenshots found.</Text>
-          ) : (
-            list.map(p => (
-              <Pressable key={p} style={{width: tileW}} onPress={() => pickItem(p)}>
-                <Image
-                  source={{uri: 'file://' + p}}
-                  style={[styles.tileThumb, {width: tileW, height: thumbH}]}
-                  resizeMode="contain"
-                />
-                <Text style={styles.tileName} numberOfLines={1}>
-                  {basename(p)}
-                </Text>
-              </Pressable>
-            ))
-          )}
-        </ScrollView>
-      </View>
-    );
-  }
-
   return (
     <View style={styles.root}>
       <Header title="Insert Screenshot" />
 
       <View style={styles.toolbar}>
         <Pressable style={styles.toolButton} onPress={openPicker} disabled={busy}>
-          <Text style={styles.toolButtonText}>Choose alternate screenshot</Text>
+          <Text style={styles.toolButtonText}>Browse files</Text>
         </Pressable>
         <Pressable
           style={[styles.toolButton, styles.toolButtonPrimary]}
@@ -358,8 +322,4 @@ const styles = StyleSheet.create({
   },
   statusWrap: {position: 'absolute', top: 16, left: 0, right: 0, alignItems: 'center'},
   statusText: {fontSize: 16, color: '#000000', backgroundColor: '#ffffff', paddingHorizontal: 12, paddingVertical: 6},
-  pickGrid: {padding: 16, flexDirection: 'row', flexWrap: 'wrap', gap: 12},
-  tileThumb: {backgroundColor: '#e8e8e8', borderWidth: 1, borderColor: '#000000'},
-  tileName: {fontSize: 11, color: '#000000', marginTop: 4, textAlign: 'center'},
-  emptyText: {fontSize: 18, color: '#000000', textAlign: 'center', marginTop: 40},
 });

@@ -104,13 +104,15 @@ template + gradle. The crop rectangle UI itself is pure JS (PanResponder).
 
 Useful native APIs found for the cropper dialog:
 
-- `RattaFileSelector.selectImage()` "Choose alternate screenshot" (native picker).
+- `RattaFileSelector.selectFile(params)` opens the native Supernote file manager (folder grid, breadcrumbs). Params: `selectType`, `suffixList`, `maxNum`, `title`, `needSelectFolder`, `limitPath`. Resolves to `string[]` or `null` on cancel.
 - `PluginNoteAPI.insertImage(pngPath)` insert the (cropped) result.
 - `PluginManager.closePluginView()` the top-left X close button.
 
-## Picker status
+## Picker
 
-The optional picker is wired as a second toolbar button (`showType: 1`) and a
-`pickScreenshot()` seam. v1 selects the most recent screenshot inside that seam;
-a real chooser UI (list of thumbnails from `listFiles`) is a drop-in replacement
-without touching the insertion path.
+The "Browse files" button calls `RattaFileSelector.selectFile` with
+`selectType: 1`, `suffixList: ['png']` and `needSelectFolder` set to the
+SCREENSHOT folder. The native browser provides folder navigation and
+breadcrumbs up to the Supernote root, so the plugin has no custom file browser.
+The selected path is loaded into the crop view; cancelling leaves the current
+image untouched.
