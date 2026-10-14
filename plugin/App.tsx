@@ -189,19 +189,15 @@ export default function App(): React.JSX.Element {
       ? 'Now tap the bottom-right corner.'
       : 'Crop set. Tap again to redo.';
 
-  const Header = ({title}: {title: string}) => (
-    <View style={styles.header}>
-      <Pressable style={styles.closeButton} onPress={close} hitSlop={16}>
-        <Text style={styles.closeIcon}>✕</Text>
-      </Pressable>
-      <Text style={styles.headerTitle}>{title}</Text>
-      <View style={styles.closeButton} />
-    </View>
-  );
-
   return (
     <View style={styles.root}>
-      <Header title="Insert Screenshot" />
+      <View style={styles.header}>
+        <Pressable style={styles.closeButton} onPress={close} hitSlop={16}>
+          <Text style={styles.closeIcon}>✕</Text>
+        </Pressable>
+        <Text style={styles.headerTitle}>Insert Screenshot</Text>
+        <View style={styles.closeButton} />
+      </View>
 
       <View style={styles.toolbar}>
         <Pressable style={styles.toolButton} onPress={openPicker} disabled={busy}>
@@ -228,13 +224,15 @@ export default function App(): React.JSX.Element {
         {path && display ? (
           <Image
             source={{uri: 'file://' + path}}
-            style={{
-              position: 'absolute',
-              left: display.offX,
-              top: display.offY,
-              width: display.dispW,
-              height: display.dispH,
-            }}
+            style={[
+              styles.previewImage,
+              {
+                left: display.offX,
+                top: display.offY,
+                width: display.dispW,
+                height: display.dispH,
+              },
+            ]}
             resizeMode="stretch"
           />
         ) : null}
@@ -310,6 +308,7 @@ const styles = StyleSheet.create({
   resetButton: {borderWidth: 2, borderColor: '#000000', paddingVertical: 10, paddingHorizontal: 20},
   resetText: {fontSize: 16, color: '#000000'},
   body: {flex: 1, backgroundColor: '#e8e8e8', marginBottom: 12},
+  previewImage: {position: 'absolute'},
   cropBox: {position: 'absolute', borderWidth: 3, borderColor: '#000000', backgroundColor: 'rgba(0,0,0,0.04)'},
   marker: {position: 'absolute', width: MARKER, height: MARKER, alignItems: 'center', justifyContent: 'center'},
   markerDot: {
